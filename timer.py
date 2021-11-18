@@ -4,7 +4,6 @@ A simple script for timing exam marking per script.
 """
 
 import statistics
-import sys
 import time
 
 
