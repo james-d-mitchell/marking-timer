@@ -5,6 +5,7 @@ A simple script for timing exam marking per script.
 
 import statistics
 import time
+from datetime import datetime
 
 
 def time_string(val):
@@ -12,7 +13,11 @@ def time_string(val):
 
 
 def pause_until_resumed():
-    input("PAUSED. Press return to start the next script.")
+    now = datetime.now()
+    input(
+        now.strftime("%H:%M:%S")
+        + ": PAUSED. Press return to start the next script."
+    )
 
 
 def quartiles(vals):
@@ -27,44 +32,62 @@ def quartiles(vals):
     ]
 
 
+def print_stats(times, elapsed):
+    print(
+        "\033[1m ===> number %d marked in %s, mean %s, total %s\033[0m"
+        % (
+            len(times),
+            time_string(elapsed),
+            time_string(statistics.mean(times)),
+            time_string(sum(times)),
+        )
+    )
+    print(
+        "\033[1m ===> quartiles |%s-[%s-%s-%s]-%s|\033[0m"
+        % tuple(map(time_string, quartiles(times)))
+    )
+
+
 times = []
+number_of_pauses = 0
 try:
     extra_time = 0
     while True:
         last_time = time.time()
+        now = datetime.now()
         from_user = input(
-            "Press return when you've marked the next script or ctrl-c to stop!  Enter p to pause: "
+            now.strftime("%H:%M:%S")
+            + ": Press return when you've marked the next script or ctrl-c to stop (p: pause, t: remove last)! "
         )
         if from_user in ["p", "P"]:
             extra_time = time.time() - last_time
+            number_of_pauses += 1
             pause_until_resumed()
+            continue
+        elif from_user in ["t", "T"]:
+            print(
+                "\033[1m ===> Removing the last submitted time of %s\033[0m"
+                % time_string(times.pop()),
+            )
+            elapsed = times[-1]
+            print_stats(times, elapsed)
             continue
         now = time.time()
         elapsed = now - last_time + extra_time
         extra_time = 0
         times.append(elapsed)
-        print(
-            "\033[1m ===> number %d marked in %s, mean %s, total %s\033[0m"
-            % (
-                len(times),
-                time_string(elapsed),
-                time_string(statistics.mean(times)),
-                time_string(sum(times)),
-            )
-        )
-        print(
-            "\033[1m ===> quartiles |%s-[%s-%s-%s]-%s|\033[0m"
-            % tuple(map(time_string, quartiles(times)))
-        )
+        print_stats(times, elapsed)
 
 
 except KeyboardInterrupt:
     if len(times) != 0:
         print(
-            "\n\033[1m ===> You marked %d scripts in %s, mean %s, max %s, min %s !!\n🌈 🦄 🌈\033[0m"
+            "\n\033[1m ===> You marked %d scripts in %s, with %d pause%s, mean %s, max %s, min %s !!\n🌈 🦄 🌈\033[0m"
             % (
                 len(times),
                 time_string(sum(times)),
+                number_of_pauses,
+                "s" if number_of_pauses > 1 else "",
                 time_string(statistics.mean(times)),
                 time_string(max(times)),
                 time_string(min(times)),
