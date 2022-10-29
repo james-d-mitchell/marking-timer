@@ -9,7 +9,11 @@ from datetime import datetime
 
 
 def time_string(val):
-    return "%dm%ds" % (int(val) / 60, int(val % 60))
+    val = int(val)
+    h = int(val / 60 / 60)
+    m = int((val / 60) - (h * 60))
+    s = int(val - (m * 60))
+    return (str(h)+"h" if h else "") + (str(m)+"m" if m else "") + str(s)+"s"
 
 
 def pause_until_resumed():
