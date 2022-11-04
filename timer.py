@@ -12,7 +12,7 @@ def time_string(val):
     val = int(val)
     h = int(val / 60 / 60)
     m = int((val / 60) - (h * 60))
-    s = int(val - (m * 60))
+    s = int(val % 60)
     return (str(h)+"h" if h else "") + (str(m)+"m" if m else "") + str(s)+"s"
 
 
