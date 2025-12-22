@@ -3,9 +3,14 @@
 A simple script for timing exam marking per script.
 """
 
+# TODO include whether the mean is going up or down
+
 import statistics
 import time
 from datetime import datetime
+
+
+LAST_MEAN = None
 
 
 def time_string(val):
@@ -13,15 +18,12 @@ def time_string(val):
     h = int(val / 60 / 60)
     m = int((val / 60) - (h * 60))
     s = int(val % 60)
-    return (str(h)+"h" if h else "") + (str(m)+"m" if m else "") + str(s)+"s"
+    return (str(h) + "h" if h else "") + (str(m) + "m" if m else "") + str(s) + "s"
 
 
 def pause_until_resumed():
     now = datetime.now()
-    input(
-        now.strftime("%H:%M:%S")
-        + ": PAUSED. Press return to start the next script."
-    )
+    input(now.strftime("%H:%M:%S") + ": PAUSED. Press return to start the next script.")
 
 
 def quartiles(vals):
@@ -37,18 +39,28 @@ def quartiles(vals):
 
 
 def print_stats(times, elapsed):
+    global LAST_MEAN
+    mean = statistics.mean(times)
+    if LAST_MEAN is not None:
+        if mean > LAST_MEAN:
+            prefix = "\033[91m"
+            pm = "+"
+        else:
+            prefix = "\033[92m"
+            pm = "-"
+        mean = f"{prefix}{time_string(mean)} ({pm}{time_string(mean - LAST_MEAN)})\033[0m\033[1m"
+    else:
+        mean = time_string(mean)
+    LAST_MEAN = statistics.mean(times)
+
+    elapsed, total = (time_string(x) for x in (elapsed, sum(times)))
     print(
-        "\033[1m ===> number %d marked in %s, mean %s, total %s\033[0m"
-        % (
-            len(times),
-            time_string(elapsed),
-            time_string(statistics.mean(times)),
-            time_string(sum(times)),
-        )
+        f"\033[1m ===> number {len(times)} marked in {elapsed}, mean {mean}, total {total}\033[0m"
     )
     print(
-        "\033[1m ===> quartiles |%s-[%s-%s-%s]-%s|\033[0m"
-        % tuple(map(time_string, quartiles(times)))
+        "\033[1m ===> quartiles |{}-[{}-{}-{}]-{}|\033[0m".format(
+            *(time_string(x) for x in quartiles(times))
+        )
     )
 
 
@@ -70,8 +82,7 @@ try:
             continue
         elif from_user in ["t", "T"]:
             print(
-                "\033[1m ===> Removing the last submitted time of %s\033[0m"
-                % time_string(times.pop()),
+                "\033[1m ===> Removing the last submitted time of {time_string(times.pop())\033[0m"
             )
             elapsed = times[-1]
             print_stats(times, elapsed)
@@ -85,15 +96,7 @@ try:
 
 except KeyboardInterrupt:
     if len(times) != 0:
+        plural = "s" if number_of_pauses > 1 else ""
         print(
-            "\n\033[1m ===> You marked %d scripts in %s, with %d pause%s, mean %s, max %s, min %s !!\n🌈 🦄 🌈\033[0m"
-            % (
-                len(times),
-                time_string(sum(times)),
-                number_of_pauses,
-                "s" if number_of_pauses > 1 else "",
-                time_string(statistics.mean(times)),
-                time_string(max(times)),
-                time_string(min(times)),
-            )
+            f"\n\033[1m ===> You marked {len(times)} scripts in {time_string(sum(times))}, with {number_of_pauses} pause{plural}, mean {time_string(statistics.mean(times))}, max {time_string(max(times))}, min {time_string(min(times))} !!\n🌈 🦄 🌈\033[0m"
         )
