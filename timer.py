@@ -3,8 +3,6 @@
 A simple script for timing exam marking per script.
 """
 
-# TODO include whether the mean is going up or down
-
 import statistics
 import time
 from datetime import datetime
@@ -14,6 +12,8 @@ LAST_MEAN = None
 
 
 def time_string(val):
+    if val < 0:
+        val *= -1
     val = int(val)
     h = int(val / 60 / 60)
     m = int((val / 60) - (h * 60))
