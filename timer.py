@@ -6,6 +6,7 @@ A simple script for timing exam marking per script.
 import statistics
 import time
 from datetime import datetime
+from asciichartpy import plot
 
 
 LAST_MEAN = None
@@ -82,7 +83,7 @@ try:
             continue
         elif from_user in ["t", "T"]:
             print(
-                "\033[1m ===> Removing the last submitted time of {time_string(times.pop())\033[0m"
+                f"\033[1m ===> Removing the last submitted time of {time_string(times.pop())}\033[0m"
             )
             elapsed = times[-1]
             print_stats(times, elapsed)
@@ -100,3 +101,4 @@ except KeyboardInterrupt:
         print(
             f"\n\033[1m ===> You marked {len(times)} scripts in {time_string(sum(times))}, with {number_of_pauses} pause{plural}, mean {time_string(statistics.mean(times))}, max {time_string(max(times))}, min {time_string(min(times))} !!\n🌈 🦄 🌈\033[0m"
         )
+        print(plot(times))
