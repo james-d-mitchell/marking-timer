@@ -22,7 +22,7 @@ def time_string(val):
 
 def pause_until_resumed():
     now = datetime.now()
-    input(now.strftime("%H:%M:%S") + ": PAUSED. Press return to resume!")
+    input(f"{now.strftime('%H:%M:%S')}: PAUSED. Press return to resume!")
 
 
 def quartiles(vals):
